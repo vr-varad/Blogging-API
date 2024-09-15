@@ -18,4 +18,12 @@ export default class Logger {
             )} - ${chalk.red(message)}`
         )
     }
+
+    static warn(message: string) {
+        console.log(
+            `${chalk.blue('[LOG]')} ${chalk.blue(
+                moment().format('YYYY-MM-DD HH:mm:ss')
+            )} - ${chalk.yellow(message)}`
+        )
+    }
 }
