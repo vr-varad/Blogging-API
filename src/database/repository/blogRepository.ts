@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
+import mongoose from 'mongoose'
 import Logger from '../../utils/logger'
-import { Blog } from '../model'
+import { Blog, Category, Comment } from '../model'
 
 class BlogRepository {
     async createBlog(
         title: string,
         content: string,
         author: string,
-        category: string,
+        category: Array<string>,
         tags: Array<string>,
         comments: Array<string>
     ) {
@@ -43,7 +44,7 @@ class BlogRepository {
         blogId: string,
         title: string,
         content: string,
-        category: string
+        category: mongoose.Types.ObjectId
     ) {
         try {
             const blog = await Blog.findById(blogId)
@@ -51,9 +52,18 @@ class BlogRepository {
                 Logger.error(`Blog with blogId ${blogId} doesn't exist.`)
                 throw new Error(`Blog Not Found`)
             }
+            let existingCategory = await Category.findOne({ _id: category })
+            if (!existingCategory) {
+                existingCategory = await Category.create({
+                    name: category, // Assuming category is a string, otherwise this should be adjusted
+                    description: ''
+                })
+            }
             blog.title = title || blog.title
             blog.content = content || blog.content
-            blog.category = category || blog.category
+            if (!blog.category.includes(existingCategory._id)) {
+                blog.category.push(existingCategory._id)
+            }
             await blog.save()
             return blog
         } catch (error) {
@@ -81,14 +91,23 @@ class BlogRepository {
             throw new Error(`Error getting blogs: ${(error as Error).message}`)
         }
     }
-    async addCommentToBlog(blogId: string, comment: string) {
+    async addCommentToBlog(
+        blogId: string,
+        commentContent: string,
+        commentAuthor: string
+    ) {
         try {
             const blog = await Blog.findById(blogId)
             if (!blog) {
                 Logger.error(`Blog with blogId ${blogId} doesn't exist.`)
                 throw new Error(`Blog Not Found`)
             }
-            blog.comments.push(comment)
+            const comment = await Comment.create({
+                content: commentContent,
+                author: commentAuthor,
+                blogId: blog._id
+            })
+            blog.comments.push(comment._id)
             await blog.save()
             return blog
         } catch (error) {
@@ -98,7 +117,7 @@ class BlogRepository {
             )
         }
     }
-    async addTagsToBlog(blogId: string, tag: string) {
+    async addTagsToBlog(blogId: string, tag: mongoose.Types.ObjectId) {
         try {
             const blog = await Blog.findById(blogId)
             if (blog == null) {
@@ -115,7 +134,7 @@ class BlogRepository {
             )
         }
     }
-    async getBlogsById(blogId: string) {
+    async getBlogsById(blogId: mongoose.Types.ObjectId) {
         try {
             const blog = await Blog.findById(blogId)
             if (blog == null) {
@@ -128,7 +147,7 @@ class BlogRepository {
             throw new Error(`Error getting blogs: ${(error as Error).message}`)
         }
     }
-    async getBlogsByTags(tag: string) {
+    async getBlogsByTags(tag: mongoose.Types.ObjectId) {
         try {
             const blogs = await Blog.find({})
             if (blogs.length < 1) return []
@@ -141,7 +160,7 @@ class BlogRepository {
             throw new Error(`Error getting blogs: ${(error as Error).message}`)
         }
     }
-    async getBlogsByCategory(category: string) {
+    async getBlogsByCategory(category: mongoose.Types.ObjectId) {
         try {
             const blogs = await Blog.find({})
             if (blogs.length < 1) return []

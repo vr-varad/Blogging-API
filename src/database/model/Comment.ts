@@ -8,7 +8,7 @@ interface CommentDoc {
 
 const commentSchema = new Schema(
     {
-        postId: { type: String, required: true },
+        blogId: { type: Schema.Types.ObjectId, ref: 'blog' },
         content: { type: String, required: true },
         author: { type: String, required: true }
     },

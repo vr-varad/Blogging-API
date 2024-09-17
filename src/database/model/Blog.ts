@@ -3,10 +3,10 @@ import mongoose, { Schema } from 'mongoose'
 interface BlogDoc {
     title: string
     content: string
-    author: string
-    category: string
-    tags: [string]
-    comments: [string]
+    author: mongoose.Types.ObjectId
+    category: mongoose.Types.ObjectId[]
+    tags: mongoose.Types.ObjectId[]
+    comments: mongoose.Types.ObjectId[]
 }
 
 const blogSchema = new Schema(
