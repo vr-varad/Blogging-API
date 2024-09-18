@@ -44,7 +44,7 @@ class BlogRepository {
         blogId: string,
         title: string,
         content: string,
-        category: mongoose.Types.ObjectId
+        category: string
     ) {
         try {
             const blog = await Blog.findById(blogId)
@@ -52,10 +52,10 @@ class BlogRepository {
                 Logger.error(`Blog with blogId ${blogId} doesn't exist.`)
                 throw new Error(`Blog Not Found`)
             }
-            let existingCategory = await Category.findOne({ _id: category })
+            let existingCategory = await Category.findOne({ name: category })
             if (!existingCategory) {
                 existingCategory = await Category.create({
-                    name: category, // Assuming category is a string, otherwise this should be adjusted
+                    name: category,
                     description: ''
                 })
             }
@@ -80,7 +80,7 @@ class BlogRepository {
             throw new Error(`Error getting blogs: ${(error as Error).message}`)
         }
     }
-    async getAllBlogsFromAuthorId(authorId: string) {
+    async getAllBlogsFromAuthorId(authorId: mongoose.Types.ObjectId) {
         try {
             const blogs = await Blog.find({
                 author: authorId
@@ -92,7 +92,7 @@ class BlogRepository {
         }
     }
     async addCommentToBlog(
-        blogId: string,
+        blogId: mongoose.Types.ObjectId,
         commentContent: string,
         commentAuthor: string
     ) {
@@ -117,7 +117,10 @@ class BlogRepository {
             )
         }
     }
-    async addTagsToBlog(blogId: string, tag: mongoose.Types.ObjectId) {
+    async addTagsToBlog(
+        blogId: mongoose.Types.ObjectId,
+        tag: mongoose.Types.ObjectId
+    ) {
         try {
             const blog = await Blog.findById(blogId)
             if (blog == null) {
