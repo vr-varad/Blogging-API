@@ -1,32 +1,41 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
+import mongoose from 'mongoose'
 import { BlogRepository } from '../database'
 import Logger from '../utils/logger'
+import CommentRepository from '../database/repository/commentRepository'
+import CategoryRepository from '../database/repository/categoryRepository'
 
 class BlogService {
-    readonly repository: BlogRepository
-    constructor(repository: BlogRepository) {
-        this.repository = repository
+    readonly blogRepository: BlogRepository
+    readonly commentRepository: CommentRepository
+    readonly categoryRepository: CategoryRepository
+    constructor(
+        blogrepository: BlogRepository,
+        commentRepository: CommentRepository,
+        categoryRepository: CategoryRepository
+    ) {
+        this.blogRepository = blogrepository
+        this.commentRepository = commentRepository
+        this.categoryRepository = categoryRepository
     }
 
     async PostBlog(inputData: {
         title: string
         content: string
         author: string
-        category: string
+        category: Array<string>
         tags: Array<string>
-        comments: Array<string>
     }) {
         try {
-            const { title, content, author, category, tags, comments } =
-                inputData
-            const blog = await this.repository.createBlog(
+            const { title, content, author, category, tags } = inputData
+            const blog = await this.blogRepository.createBlog(
                 title,
                 content,
                 author,
                 category,
-                tags,
-                comments
+                tags
             )
+
             return blog
         } catch (error) {
             Logger.error(`Error creating blog: ${error}`)
@@ -43,7 +52,7 @@ class BlogService {
     ) {
         try {
             const { title, content, category } = inputData
-            const blog = await this.repository.updateBlog(
+            const blog = await this.blogRepository.updateBlog(
                 blogId,
                 String(title),
                 String(content),
@@ -57,7 +66,7 @@ class BlogService {
     }
     async DeleteBlog(blogId: string) {
         try {
-            const blog = await this.repository.deleteBlog(blogId)
+            const blog = await this.blogRepository.deleteBlog(blogId)
             return blog
         } catch (error) {
             Logger.error(`Error deleting blog: ${error}`)
@@ -66,21 +75,41 @@ class BlogService {
     }
     async GetAllBlogs() {
         try {
-            const blogs = await this.repository.getAllBlogs()
+            const blogs = await this.blogRepository.getAllBlogs()
             return blogs
         } catch (error) {
             Logger.error(`Error getting blogs: ${error}`)
             throw new Error(`Error getting blogs: ${(error as Error).message}`)
         }
     }
-    async GetAllBlogsFromAuthorId(authorId: string) {
+    async GetAllBlogsFromAuthorId(authorId: mongoose.Types.ObjectId) {
         try {
             const blogs =
-                await this.repository.getAllBlogsFromAuthorId(authorId)
+                await this.blogRepository.getAllBlogsFromAuthorId(authorId)
             return blogs
         } catch (error) {
             Logger.error(`Error getting blogs: ${error}`)
             throw new Error(`Error getting blogs: ${(error as Error).message}`)
+        }
+    }
+
+    async AddCommentFromBlogId(
+        blogId: mongoose.Types.ObjectId,
+        authorId: mongoose.Types.ObjectId,
+        content: string
+    ) {
+        try {
+            const blog = await this.blogRepository.addCommentToBlog(
+                blogId,
+                content,
+                authorId
+            )
+            return blog
+        } catch (error) {
+            Logger.error(`Error addding comment to blogs: ${error}`)
+            throw new Error(
+                `Error addding comment to blogs: ${(error as Error).message}`
+            )
         }
     }
 }

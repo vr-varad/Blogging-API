@@ -1,16 +1,16 @@
 import mongoose, { Schema } from 'mongoose'
 
 interface CommentDoc {
-    postId: string
+    blogId: string
     content: string
-    author: string
+    authorId: string
 }
 
 const commentSchema = new Schema(
     {
         blogId: { type: Schema.Types.ObjectId, ref: 'blog' },
         content: { type: String, required: true },
-        author: { type: String, required: true }
+        authorId: { type: String, required: true }
     },
     {
         timestamps: true,
