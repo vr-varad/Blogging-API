@@ -2,8 +2,8 @@
 import mongoose from 'mongoose'
 import { BlogRepository } from '../database'
 import Logger from '../utils/logger'
-import CommentRepository from '../database/repository/commentRepository'
-import CategoryRepository from '../database/repository/categoryRepository'
+import CommentRepository from '../database/repository/comment.repository'
+import CategoryRepository from '../database/repository/category.repository'
 
 class BlogService {
     readonly blogRepository: BlogRepository
