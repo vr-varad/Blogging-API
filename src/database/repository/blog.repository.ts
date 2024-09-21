@@ -7,7 +7,7 @@ class BlogRepository {
     async createBlog(
         title: string,
         content: string,
-        author: string,
+        author: mongoose.Types.ObjectId,
         category: Array<string>,
         tags: Array<string>
     ) {
@@ -19,31 +19,27 @@ class BlogRepository {
                 category: [],
                 tags: []
             })
-            await Promise.all(
-                tags.map(async (tag) => {
-                    const existingTag = await Tag.findOne({ name: tag })
-                    if (!existingTag) {
-                        const newTag = await Tag.create({ name: tag })
-                        blog.tags.push(newTag._id)
-                    } else {
-                        blog.tags.push(existingTag._id)
-                    }
-                })
-            )
+            for (const tag of tags) {
+                const existingTag = await Tag.findOne({ name: tag })
+                if (!existingTag) {
+                    const newTag = await Tag.create({ name: tag })
+                    blog.tags.push(newTag._id)
+                } else {
+                    blog.tags.push(existingTag._id)
+                }
+            }
 
-            await Promise.all(
-                category.map(async (cat) => {
-                    const existingCategory = await Category.findOne({
-                        name: cat
-                    })
-                    if (!existingCategory) {
-                        const newCategory = await Category.create({ name: cat })
-                        blog.category.push(newCategory._id)
-                    } else {
-                        blog.category.push(existingCategory._id)
-                    }
+            for (const cat of category) {
+                const existingCategory = await Category.findOne({
+                    name: cat
                 })
-            )
+                if (!existingCategory) {
+                    const newCategory = await Category.create({ name: cat })
+                    blog.category.push(newCategory._id)
+                } else {
+                    blog.category.push(existingCategory._id)
+                }
+            }
 
             await blog.save()
 
@@ -53,13 +49,9 @@ class BlogRepository {
             throw new Error(`Error creating blog: ${(error as Error).message}`)
         }
     }
-    async deleteBlog(blogId: string) {
+    async deleteBlog(blogId: mongoose.Types.ObjectId) {
         try {
             const blog = await Blog.findByIdAndDelete(blogId)
-            if (blog === null) {
-                Logger.error(`Blog with blogId ${blogId} doesn't exist.`)
-                throw new Error(`Blog Not Found`)
-            }
             return blog
         } catch (error) {
             Logger.error(`Error deleting blog: ${error}`)
@@ -67,31 +59,32 @@ class BlogRepository {
         }
     }
     async updateBlog(
-        blogId: string,
+        blogId: mongoose.Types.ObjectId,
         title: string,
         content: string,
         category: string
     ) {
         try {
             const blog = await Blog.findById(blogId)
-            if (blog === null) {
-                Logger.error(`Blog with blogId ${blogId} doesn't exist.`)
-                throw new Error(`Blog Not Found`)
-            }
-            let existingCategory = await Category.findOne({ name: category })
-            if (!existingCategory) {
-                existingCategory = await Category.create({
-                    name: category,
-                    description: ''
+            if (blog) {
+                let existingCategory = await Category.findOne({
+                    name: category
                 })
+                if (!existingCategory) {
+                    existingCategory = await Category.create({
+                        name: category,
+                        description: ''
+                    })
+                }
+                blog.title = title || blog.title
+                blog.content = content || blog.content
+                if (!blog.category.includes(existingCategory._id)) {
+                    blog.category.push(existingCategory._id)
+                }
+                await blog.save()
+                return blog
             }
-            blog.title = title || blog.title
-            blog.content = content || blog.content
-            if (!blog.category.includes(existingCategory._id)) {
-                blog.category.push(existingCategory._id)
-            }
-            await blog.save()
-            return blog
+            throw new Error(`Error updating blog`)
         } catch (error) {
             Logger.error(`Error updating blog: ${error}`)
             throw new Error(`Error updating blog: ${(error as Error).message}`)

@@ -9,20 +9,16 @@ class BlogService {
     readonly blogRepository: BlogRepository
     readonly commentRepository: CommentRepository
     readonly categoryRepository: CategoryRepository
-    constructor(
-        blogrepository: BlogRepository,
-        commentRepository: CommentRepository,
-        categoryRepository: CategoryRepository
-    ) {
-        this.blogRepository = blogrepository
-        this.commentRepository = commentRepository
-        this.categoryRepository = categoryRepository
+    constructor() {
+        this.blogRepository = new BlogRepository()
+        this.commentRepository = new CommentRepository()
+        this.categoryRepository = new CategoryRepository()
     }
 
-    async PostBlog(inputData: {
+    async CreateBlog(inputData: {
         title: string
         content: string
-        author: string
+        author: mongoose.Types.ObjectId
         category: Array<string>
         tags: Array<string>
     }) {
@@ -35,7 +31,6 @@ class BlogService {
                 category,
                 tags
             )
-
             return blog
         } catch (error) {
             Logger.error(`Error creating blog: ${error}`)
@@ -43,7 +38,8 @@ class BlogService {
         }
     }
     async UpdateBlog(
-        blogId: string,
+        blogId: mongoose.Types.ObjectId,
+        authorId: mongoose.Types.ObjectId,
         inputData: Partial<{
             title: string
             content: string
@@ -51,22 +47,49 @@ class BlogService {
         }>
     ) {
         try {
+            const blog = await this.blogRepository.getBlogsById(blogId)
+
+            if (!blog) {
+                throw new Error('Blog not found')
+            }
+
+            if (!blog.author.equals(authorId)) {
+                throw new Error(
+                    'Unauthorized: You are not the author of this blog'
+                )
+            }
+
             const { title, content, category } = inputData
-            const blog = await this.blogRepository.updateBlog(
+
+            const updatedBlog = await this.blogRepository.updateBlog(
                 blogId,
-                String(title),
-                String(content),
+                String(title) || blog.title,
+                String(content) || blog.content,
                 String(category)
             )
-            return blog
+            return updatedBlog
         } catch (error) {
             Logger.error(`Error updating blog: ${error}`)
             throw new Error(`Error updating blog: ${(error as Error).message}`)
         }
     }
-    async DeleteBlog(blogId: string) {
+    async DeleteBlog(
+        blogId: mongoose.Types.ObjectId,
+        authorId: mongoose.Types.ObjectId
+    ) {
         try {
-            const blog = await this.blogRepository.deleteBlog(blogId)
+            const blog = await this.blogRepository.getBlogsById(blogId)
+
+            if (!blog) {
+                throw new Error('Blog not found')
+            }
+
+            if (!blog.author.equals(authorId)) {
+                throw new Error(
+                    'Unauthorized: You are not the author of this blog'
+                )
+            }
+            await this.blogRepository.deleteBlog(blogId)
             return blog
         } catch (error) {
             Logger.error(`Error deleting blog: ${error}`)
@@ -80,6 +103,18 @@ class BlogService {
         } catch (error) {
             Logger.error(`Error getting blogs: ${error}`)
             throw new Error(`Error getting blogs: ${(error as Error).message}`)
+        }
+    }
+    async GetBlogById(blogId: mongoose.Types.ObjectId) {
+        try {
+            const blog = await this.blogRepository.getBlogsById(blogId)
+            if (!blog) {
+                throw new Error(`Blog With Id ${blogId} Not Found`)
+            }
+            return blog
+        } catch (error) {
+            Logger.error(`Error getting blog: ${error}`)
+            throw new Error(`Error getting blog: ${(error as Error).message}`)
         }
     }
     async GetAllBlogsFromAuthorId(authorId: mongoose.Types.ObjectId) {
