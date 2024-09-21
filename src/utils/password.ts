@@ -1,7 +1,14 @@
 import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 import config from '../config/config'
 import { Request } from 'express'
+import mongoose from 'mongoose'
+
+interface User extends JwtPayload {
+    _id: mongoose.Types.ObjectId
+    email: string
+    role: string
+}
 
 const GenerateSalt = async () => {
     return await bcrypt.genSalt()
@@ -19,7 +26,7 @@ const VerifyPassword = async (
     return (await GeneratePasswordHash(salt, enteredPassword)) === savedPassword
 }
 const GenerateToken = (payload: {
-    _id: string
+    _id: mongoose.Types.ObjectId
     email: string
     role: string
 }) => {
@@ -29,11 +36,19 @@ const GenerateToken = (payload: {
 }
 
 const ValidateToken = (req: Request) => {
-    const token = req.get('Authorisation')?.split(' ')[1]
+    const token = req.get('Authorization')?.split(' ')[1]
     if (token) {
         const payload = jwt.verify(token, String(config.JWT_SECRET))
-        // req.user = payload
-        return payload
+
+        if (
+            typeof payload === 'object' &&
+            payload !== null &&
+            '_id' in payload
+        ) {
+            const userPayload = payload as User
+            req.user = userPayload
+            return userPayload
+        }
     }
     return false
 }

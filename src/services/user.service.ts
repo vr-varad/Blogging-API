@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import { UserRepository } from '../database'
 import Logger from '../utils/logger'
 import {
@@ -41,7 +42,7 @@ class UserService {
             )
 
             const token = GenerateToken({
-                _id: String(newUser._id),
+                _id: newUser._id,
                 email: newUser.email,
                 role: newUser.role
             })
@@ -73,7 +74,7 @@ class UserService {
             )
             if (isValidPassword) {
                 const token = GenerateToken({
-                    _id: String(user._id),
+                    _id: user._id,
                     email: user.email,
                     role: user.role
                 })
@@ -93,6 +94,18 @@ class UserService {
         } catch (error) {
             Logger.error(`Error signing in user: ${(error as Error).message}`)
             throw new Error('Failed to sign in user')
+        }
+    }
+
+    async GetProfile(userId: mongoose.Types.ObjectId) {
+        try {
+            const user = await this.repository.GetUserById(userId)
+            return {
+                user
+            }
+        } catch (error) {
+            Logger.error(`Error getting user: ${(error as Error).message}`)
+            throw new Error('Failed to get a user')
         }
     }
 }

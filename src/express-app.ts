@@ -6,7 +6,7 @@ const expressApp = (app: Application) => {
     app.use(express.json())
     app.use(express.urlencoded({ extended: true }))
     app.use(cors())
-    app.use('/user', UserRouter)
+    app.use('/api/v1/user', UserRouter)
 }
 
 export default expressApp

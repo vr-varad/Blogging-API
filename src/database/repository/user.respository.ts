@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
+import mongoose from 'mongoose'
 import Logger from '../../utils/logger'
 import { User } from '../model'
 
@@ -67,14 +68,13 @@ class UserRepository {
         }
     }
 
-    async GetUserById(userId: string) {
+    async GetUserById(userId: mongoose.Types.ObjectId) {
         try {
             const user = await User.findById(userId)
             if (!user) {
                 return null
             }
-            const { passwordhash, salt, ...safeUser } = user
-            return safeUser
+            return user
         } catch (error) {
             Logger.error(`Error getting user with ID ${userId}: ${error}`)
             throw new Error(`Error getting user: ${(error as Error).message}`)
