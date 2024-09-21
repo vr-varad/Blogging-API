@@ -63,9 +63,9 @@ class BlogService {
 
             const updatedBlog = await this.blogRepository.updateBlog(
                 blogId,
-                String(title) || blog.title,
-                String(content) || blog.content,
-                String(category)
+                title || blog.title,
+                content || blog.content,
+                category
             )
             return updatedBlog
         } catch (error) {

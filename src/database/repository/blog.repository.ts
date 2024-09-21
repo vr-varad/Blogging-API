@@ -60,27 +60,29 @@ class BlogRepository {
     }
     async updateBlog(
         blogId: mongoose.Types.ObjectId,
-        title: string,
-        content: string,
-        category: string
+        title: string | undefined,
+        content: string | undefined,
+        category: string | undefined
     ) {
         try {
             const blog = await Blog.findById(blogId)
             if (blog) {
-                let existingCategory = await Category.findOne({
-                    name: category
-                })
-                if (!existingCategory) {
-                    existingCategory = await Category.create({
-                        name: category,
-                        description: ''
+                if (category) {
+                    let existingCategory = await Category.findOne({
+                        name: category
                     })
+                    if (!existingCategory || category !== 'undefined') {
+                        existingCategory = await Category.create({
+                            name: category,
+                            description: ''
+                        })
+                    }
+                    if (!blog.category.includes(existingCategory._id)) {
+                        blog.category.push(existingCategory._id)
+                    }
                 }
                 blog.title = title || blog.title
                 blog.content = content || blog.content
-                if (!blog.category.includes(existingCategory._id)) {
-                    blog.category.push(existingCategory._id)
-                }
                 await blog.save()
                 return blog
             }

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Request, Response } from 'express'
-import BlogService from '../services/blog.service.'
+import { BlogService } from '../services'
 import { JwtPayload } from 'jsonwebtoken'
 import mongoose from 'mongoose'
 import { CreateBlogInputs, UpdateBlogInputs } from '../dto/Blog'
