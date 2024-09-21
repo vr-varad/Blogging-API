@@ -92,9 +92,9 @@ class BlogRepository {
             throw new Error(`Error updating blog: ${(error as Error).message}`)
         }
     }
-    async getAllBlogs() {
+    async getAllBlogs(limit: number = 10, offset: number = 0) {
         try {
-            const blogs = await Blog.find({})
+            const blogs = await Blog.find({}).skip(offset).limit(limit)
             return blogs
         } catch (error) {
             Logger.error(`Error getting blogs: ${error}`)

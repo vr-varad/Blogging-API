@@ -96,9 +96,11 @@ class BlogService {
             throw new Error(`Error deleting blog: ${(error as Error).message}`)
         }
     }
-    async GetAllBlogs() {
+    async GetAllBlogs(page: number, pageSize: number) {
         try {
-            const blogs = await this.blogRepository.getAllBlogs()
+            const limit = pageSize
+            const offset = (page - 1) * pageSize
+            const blogs = await this.blogRepository.getAllBlogs(limit, offset)
             return blogs
         } catch (error) {
             Logger.error(`Error getting blogs: ${error}`)
