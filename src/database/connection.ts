@@ -5,7 +5,9 @@ import Logger from '../utils/logger'
 const connectDB = async () => {
     try {
         await mongoose.connect(config.DATABASE_URL as string, {
-            dbName: 'EtherTransactions'
+            dbName: 'Blogging-API',
+            maxPoolSize: 10,
+            minPoolSize: 2
         })
         Logger.log('DB Connected')
     } catch (error) {
