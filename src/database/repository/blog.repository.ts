@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import mongoose from 'mongoose'
 import Logger from '../../utils/logger'
-import { Blog, Category, Comment, Tag } from '../model'
+import { Blog, Category, Tag } from '../model'
 
 class BlogRepository {
     async createBlog(
@@ -110,59 +110,6 @@ class BlogRepository {
         } catch (error) {
             Logger.error(`Error getting blogs: ${error}`)
             throw new Error(`Error getting blogs: ${(error as Error).message}`)
-        }
-    }
-    async addCommentToBlog(
-        blogId: mongoose.Types.ObjectId,
-        commentContent: string,
-        commentAuthor: mongoose.Types.ObjectId
-    ) {
-        try {
-            const blog = await Blog.findById(blogId)
-            if (!blog) {
-                Logger.error(`Blog with blogId ${blogId} doesn't exist.`)
-                throw new Error(`Blog Not Found`)
-            }
-            const comment = await Comment.create({
-                content: commentContent,
-                author: commentAuthor,
-                blogId: blog._id
-            })
-            blog.comments.push(comment._id)
-            await blog.save()
-            return blog
-        } catch (error) {
-            Logger.error(`Error adding comment to blogs: ${error}`)
-            throw new Error(
-                `Error adding comments to blogs: ${(error as Error).message}`
-            )
-        }
-    }
-    async addTagsToBlog(blogId: mongoose.Types.ObjectId, tag: string) {
-        try {
-            const blog = await Blog.findById(blogId)
-            if (blog == null) {
-                Logger.error(`Blog with blogId ${blogId} doesn't exist.`)
-                throw new Error(`Blog Not Found`)
-            }
-            const existingTag = await Tag.findOne({
-                name: tag
-            })
-            if (existingTag == null) {
-                const newTag = await Tag.create({
-                    name: tag
-                })
-                blog.tags.push(newTag._id)
-            } else {
-                blog.tags.push(existingTag._id)
-            }
-            await blog.save()
-            return blog
-        } catch (error) {
-            Logger.error(`Error adding tags to blogs: ${error}`)
-            throw new Error(
-                `Error adding tags to blogs: ${(error as Error).message}`
-            )
         }
     }
     async getBlogsById(blogId: mongoose.Types.ObjectId) {

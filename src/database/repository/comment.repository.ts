@@ -23,6 +23,19 @@ class CommentRepository {
             )
         }
     }
+    async updateComment(commentId: mongoose.Types.ObjectId, content: string) {
+        try {
+            const comment = await Comment.findByIdAndUpdate(commentId, {
+                content
+            })
+            return comment
+        } catch (error) {
+            Logger.error(`Error updating comments: ${error}`)
+            throw new Error(
+                `Error updating comments: ${(error as Error).message}`
+            )
+        }
+    }
     async deleteComment(commentId: mongoose.Types.ObjectId) {
         try {
             const comment = await Comment.findByIdAndDelete({

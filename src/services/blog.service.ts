@@ -130,17 +130,23 @@ class BlogService {
         }
     }
 
-    async AddCommentFromBlogId(
+    async AddCommentToBlog(
         blogId: mongoose.Types.ObjectId,
         authorId: mongoose.Types.ObjectId,
         content: string
     ) {
         try {
-            const blog = await this.blogRepository.addCommentToBlog(
+            const blog = await this.blogRepository.getBlogsById(blogId)
+            if (!blog) {
+                throw new Error(`Blog with Id ${blogId} not found`)
+            }
+            const comment = await this.commentRepository.addComment(
                 blogId,
-                content,
-                authorId
+                authorId,
+                content
             )
+            blog.comments.push(comment._id)
+            await blog.save()
             return blog
         } catch (error) {
             Logger.error(`Error addding comment to blogs: ${error}`)
