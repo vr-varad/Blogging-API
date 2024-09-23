@@ -21,10 +21,7 @@ class BlogRepository {
             })
             for (const tag of tags) {
                 const existingTag = await Tag.findOne({ name: tag })
-                if (!existingTag) {
-                    const newTag = await Tag.create({ name: tag })
-                    blog.tags.push(newTag._id)
-                } else {
+                if (existingTag) {
                     blog.tags.push(existingTag._id)
                 }
             }
@@ -33,10 +30,7 @@ class BlogRepository {
                 const existingCategory = await Category.findOne({
                     name: cat
                 })
-                if (!existingCategory) {
-                    const newCategory = await Category.create({ name: cat })
-                    blog.category.push(newCategory._id)
-                } else {
+                if (existingCategory) {
                     blog.category.push(existingCategory._id)
                 }
             }
@@ -68,17 +62,13 @@ class BlogRepository {
             const blog = await Blog.findById(blogId)
             if (blog) {
                 if (category) {
-                    let existingCategory = await Category.findOne({
+                    const existingCategory = await Category.findOne({
                         name: category
                     })
-                    if (!existingCategory || category !== 'undefined') {
-                        existingCategory = await Category.create({
-                            name: category,
-                            description: ''
-                        })
-                    }
-                    if (!blog.category.includes(existingCategory._id)) {
-                        blog.category.push(existingCategory._id)
+                    if (existingCategory) {
+                        if (!blog.category.includes(existingCategory._id)) {
+                            blog.category.push(existingCategory._id)
+                        }
                     }
                 }
                 blog.title = title || blog.title

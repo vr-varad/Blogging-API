@@ -10,3 +10,7 @@ export interface UpdateBlogInputs {
     content: string
     category: string
 }
+
+export interface AddCommentInputs {
+    content: string
+}

@@ -3,7 +3,11 @@ import { Request, Response } from 'express'
 import { BlogService } from '../services'
 import { JwtPayload } from 'jsonwebtoken'
 import mongoose from 'mongoose'
-import { CreateBlogInputs, UpdateBlogInputs } from '../dto/Blog'
+import {
+    AddCommentInputs,
+    CreateBlogInputs,
+    UpdateBlogInputs
+} from '../dto/Blog'
 import Logger from '../utils/logger'
 
 interface User extends JwtPayload {
@@ -132,4 +136,38 @@ const DeleteBlog = async (req: Request, res: Response) => {
     }
 }
 
-export { CreateBlog, GetAllBlogs, GetBlogById, UpdateBlog, DeleteBlog }
+const AddComment = async (req: Request, res: Response) => {
+    try {
+        const { id: objectId } = req.params
+        const blogId = new mongoose.Types.ObjectId(objectId)
+        const { _id: authorId } = req.user
+        const { content }: AddCommentInputs = req.body
+        const blog = await blogService.AddCommentToBlog(
+            blogId,
+            authorId,
+            content
+        )
+        return res.status(200).json({
+            success: true,
+            blog
+        })
+    } catch (error) {
+        Logger.error(
+            `Error during adding comment to blog: ${(error as Error).message}`
+        )
+        return res.status(500).json({
+            success: false,
+            message: 'Error adding comment to blog',
+            error: (error as Error).message
+        })
+    }
+}
+
+export {
+    CreateBlog,
+    GetAllBlogs,
+    GetBlogById,
+    UpdateBlog,
+    DeleteBlog,
+    AddComment
+}
