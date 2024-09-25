@@ -3,14 +3,14 @@ import mongoose, { Schema } from 'mongoose'
 interface CommentDoc {
     blogId: string
     content: string
-    authorId: string
+    authorId: mongoose.Types.ObjectId
 }
 
 const commentSchema = new Schema(
     {
         blogId: { type: Schema.Types.ObjectId, ref: 'blog' },
         content: { type: String, required: true },
-        authorId: { type: String, required: true }
+        authorId: { type: Schema.Types.ObjectId, ref: 'user', required: true }
     },
     {
         timestamps: true,

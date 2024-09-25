@@ -13,7 +13,7 @@ const blogSchema = new Schema(
     {
         title: { type: String, required: true },
         content: { type: String, required: true },
-        author: { type: Schema.Types.ObjectId, required: true },
+        author: { type: Schema.Types.ObjectId, ref: 'user', required: true },
         category: [{ type: Schema.Types.ObjectId, ref: 'category' }],
         tags: [{ type: Schema.Types.ObjectId, ref: 'tag' }],
         comments: [{ type: Schema.Types.ObjectId, ref: 'comment' }]

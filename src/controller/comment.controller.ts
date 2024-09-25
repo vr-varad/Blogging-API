@@ -4,6 +4,22 @@ import { CommentService } from '../services'
 import { UpdateCommentInputs } from '../dto/Comment'
 import Logger from '../utils/logger'
 import mongoose from 'mongoose'
+import { JwtPayload } from 'jsonwebtoken'
+
+interface User extends JwtPayload {
+    _id: mongoose.Types.ObjectId
+    email: string
+    role: string
+}
+
+declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace Express {
+        interface Request {
+            user: User
+        }
+    }
+}
 
 const commentService = new CommentService()
 

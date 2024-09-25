@@ -112,7 +112,12 @@ class BlogRepository {
     }
     async getBlogsById(blogId: mongoose.Types.ObjectId) {
         try {
-            const blog = await Blog.findById(blogId)
+            const blog = await Blog.findById(blogId).populate([
+                'category',
+                'tags',
+                'author',
+                'comments'
+            ])
             if (!blog) {
                 Logger.warn(`Blog with blogId ${blogId} doesn't exist.`)
                 return null

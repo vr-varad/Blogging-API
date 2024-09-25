@@ -10,12 +10,14 @@ class CommentRepository {
         content: string
     ) {
         try {
-            const comment = await Comment.create({
+            const comment = new Comment({
                 blogId,
                 content,
                 authorId
             })
             return comment
+                .save()
+                .then((comment) => comment.populate('authorId'))
         } catch (error) {
             Logger.error(`Error adding comments: ${error}`)
             throw new Error(
