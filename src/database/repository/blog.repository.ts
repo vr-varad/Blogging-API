@@ -46,6 +46,10 @@ class BlogRepository {
     async deleteBlog(blogId: mongoose.Types.ObjectId) {
         try {
             const blog = await Blog.findByIdAndDelete(blogId)
+            if (!blog) {
+                Logger.warn(`Blog with Id ${blogId} Not Found`)
+                return null
+            }
             return blog
         } catch (error) {
             Logger.error(`Error deleting blog: ${error}`)
@@ -60,23 +64,24 @@ class BlogRepository {
     ) {
         try {
             const blog = await Blog.findById(blogId)
-            if (blog) {
-                if (category) {
-                    const existingCategory = await Category.findOne({
-                        name: category
-                    })
-                    if (existingCategory) {
-                        if (!blog.category.includes(existingCategory._id)) {
-                            blog.category.push(existingCategory._id)
-                        }
+            if (!blog) {
+                Logger.warn(`Blog With BlogId ${blogId} Not Found`)
+                return null
+            }
+            if (category) {
+                const existingCategory = await Category.findOne({
+                    name: category
+                })
+                if (existingCategory) {
+                    if (!blog.category.includes(existingCategory._id)) {
+                        blog.category.push(existingCategory._id)
                     }
                 }
-                blog.title = title || blog.title
-                blog.content = content || blog.content
-                await blog.save()
-                return blog
             }
-            throw new Error(`Error updating blog`)
+            blog.title = title || blog.title
+            blog.content = content || blog.content
+            await blog.save()
+            return blog
         } catch (error) {
             Logger.error(`Error updating blog: ${error}`)
             throw new Error(`Error updating blog: ${(error as Error).message}`)
@@ -96,6 +101,9 @@ class BlogRepository {
             const blogs = await Blog.find({
                 author: authorId
             })
+            if (blogs.length === 0) {
+                Logger.warn(`No blogs found for author with Id ${authorId}`)
+            }
             return blogs
         } catch (error) {
             Logger.error(`Error getting blogs: ${error}`)
@@ -105,9 +113,9 @@ class BlogRepository {
     async getBlogsById(blogId: mongoose.Types.ObjectId) {
         try {
             const blog = await Blog.findById(blogId)
-            if (blog == null) {
-                Logger.error(`Blog with blogId ${blogId} doesn't exist.`)
-                throw new Error(`Blog Not Found`)
+            if (!blog) {
+                Logger.warn(`Blog with blogId ${blogId} doesn't exist.`)
+                return null
             }
             return blog
         } catch (error) {
@@ -117,12 +125,8 @@ class BlogRepository {
     }
     async getBlogsByTags(tag: mongoose.Types.ObjectId) {
         try {
-            const blogs = await Blog.find({})
-            if (blogs.length < 1) return []
-            const blogWithTags = blogs.filter((blog) => {
-                blog.tags.includes(tag)
-            })
-            return blogWithTags
+            const blogs = await Blog.find({ tags: { $in: [tag] } })
+            return blogs.length ? blogs : null
         } catch (error) {
             Logger.error(`Error getting blogs: ${error}`)
             throw new Error(`Error getting blogs: ${(error as Error).message}`)
@@ -130,12 +134,8 @@ class BlogRepository {
     }
     async getBlogsByCategory(category: mongoose.Types.ObjectId) {
         try {
-            const blogs = await Blog.find({})
-            if (blogs.length < 1) return []
-            const blogWithCategory = blogs.filter((blog) => {
-                blog.tags.includes(category)
-            })
-            return blogWithCategory
+            const blogs = await Blog.find({ category: { $in: [category] } })
+            return blogs.length ? blogs : null
         } catch (error) {
             Logger.error(`Error getting blogs: ${error}`)
             throw new Error(`Error getting blogs: ${(error as Error).message}`)

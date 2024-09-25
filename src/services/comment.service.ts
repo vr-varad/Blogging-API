@@ -10,13 +10,27 @@ class CommentService {
         this.commentRepository = new CommentRepository()
     }
 
-    async UpdateComment(commentId: mongoose.Types.ObjectId, content: string) {
+    async UpdateComment(
+        authorId: mongoose.Types.ObjectId,
+        commentId: mongoose.Types.ObjectId,
+        content: string
+    ) {
         try {
-            const comment = await this.commentRepository.updateComment(
+            const comment =
+                await this.commentRepository.getCommentFromCommentId(commentId)
+            if (!comment) {
+                throw new Error('Comment Not Found')
+            }
+            if (comment.authorId.toString() != authorId.toString()) {
+                throw new Error(
+                    'Not Authorized: You are not the author of this comment'
+                )
+            }
+            const updatedComment = await this.commentRepository.updateComment(
                 commentId,
                 content
             )
-            return comment
+            return updatedComment
         } catch (error) {
             Logger.error(`Error Updating Comment Service: ${error}`)
             throw new Error(
@@ -24,11 +38,24 @@ class CommentService {
             )
         }
     }
-    async DeleteComment(commentId: mongoose.Types.ObjectId) {
+    async DeleteComment(
+        authorId: mongoose.Types.ObjectId,
+        commentId: mongoose.Types.ObjectId
+    ) {
         try {
             const comment =
+                await this.commentRepository.getCommentFromCommentId(commentId)
+            if (!comment) {
+                throw new Error('Comment Not Found')
+            }
+            if (comment.authorId.toString() != authorId.toString()) {
+                throw new Error(
+                    'Not Authorized: You are not the author of this comment'
+                )
+            }
+            const deletedComment =
                 await this.commentRepository.deleteComment(commentId)
-            return comment
+            return deletedComment
         } catch (error) {
             Logger.error(`Error Deleting Comment: ${error}`)
             throw new Error(

@@ -25,9 +25,17 @@ class CommentRepository {
     }
     async updateComment(commentId: mongoose.Types.ObjectId, content: string) {
         try {
-            const comment = await Comment.findByIdAndUpdate(commentId, {
-                content
-            })
+            const comment = await Comment.findByIdAndUpdate(
+                commentId,
+                {
+                    content
+                },
+                { new: true }
+            )
+            if (!comment) {
+                Logger.warn(`Comment With CommentId ${commentId} Not Found`)
+                return null
+            }
             return comment
         } catch (error) {
             Logger.error(`Error updating comments: ${error}`)
@@ -38,9 +46,11 @@ class CommentRepository {
     }
     async deleteComment(commentId: mongoose.Types.ObjectId) {
         try {
-            const comment = await Comment.findByIdAndDelete({
-                commentId
-            })
+            const comment = await Comment.findByIdAndDelete(commentId)
+            if (!comment) {
+                Logger.warn(`Comment With CommentId ${commentId} Not Found`)
+                return null
+            }
             return comment
         } catch (error) {
             Logger.error(`Error deleting comments: ${error}`)
@@ -53,7 +63,7 @@ class CommentRepository {
         try {
             const comments = await Comment.find({
                 postId
-            })
+            }).lean()
             return comments
         } catch (error) {
             Logger.error(`Error getting comments: ${error}`)
@@ -66,12 +76,28 @@ class CommentRepository {
         try {
             const comments = await Comment.find({
                 authorId
-            })
+            }).lean()
             return comments
         } catch (error) {
             Logger.error(`Error getting comments: ${error}`)
             throw new Error(
                 `Error getting comments: ${(error as Error).message}`
+            )
+        }
+    }
+
+    async getCommentFromCommentId(commentId: mongoose.Types.ObjectId) {
+        try {
+            const comment = await Comment.findById(commentId).lean()
+            if (!comment) {
+                Logger.warn(`Comment not found for ID: ${commentId}`)
+                return null
+            }
+            return comment
+        } catch (error) {
+            Logger.error(`Error getting comment: ${error}`)
+            throw new Error(
+                `Error getting comment: ${(error as Error).message}`
             )
         }
     }

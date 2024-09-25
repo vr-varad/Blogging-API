@@ -10,9 +10,14 @@ const commentService = new CommentService()
 const updateComment = async (req: Request, res: Response) => {
     try {
         const { id: objectId } = req.params
+        const { _id: authorId } = req.user
         const commentId = new mongoose.Types.ObjectId(objectId)
         const { content }: UpdateCommentInputs = req.body
-        const comment = await commentService.UpdateComment(commentId, content)
+        const comment = await commentService.UpdateComment(
+            authorId,
+            commentId,
+            content
+        )
         return res.json({
             success: true,
             comment
@@ -32,8 +37,9 @@ const updateComment = async (req: Request, res: Response) => {
 const deleteComment = async (req: Request, res: Response) => {
     try {
         const { id: objectId } = req.params
+        const { _id: authorId } = req.user
         const commentId = new mongoose.Types.ObjectId(objectId)
-        const comment = await commentService.DeleteComment(commentId)
+        const comment = await commentService.DeleteComment(authorId, commentId)
         return res.json({
             success: true,
             comment

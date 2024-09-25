@@ -72,6 +72,7 @@ class UserRepository {
         try {
             const user = await User.findById(userId)
             if (!user) {
+                Logger.warn(`User with UserId ${userId} Not Found`)
                 return null
             }
             return user
@@ -86,7 +87,8 @@ class UserRepository {
             const user = await User.findOne({
                 email: userEmail
             })
-            if (user === null) {
+            if (!user) {
+                Logger.warn(`User with UserEmail ${userEmail} Not Found`)
                 return null
             }
             return user
