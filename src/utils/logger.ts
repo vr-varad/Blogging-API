@@ -26,4 +26,12 @@ export default class Logger {
             )} - ${chalk.yellow(message)}`
         )
     }
+
+    static success(message: string) {
+        console.log(
+            `${chalk.green('[LOG]')} ${chalk.green(
+                moment().format('YYYY-MM-DD HH:mm:ss')
+            )} - ${chalk.yellow(message)}`
+        )
+    }
 }

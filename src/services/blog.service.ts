@@ -1,18 +1,26 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import mongoose from 'mongoose'
-import { BlogRepository } from '../database'
 import Logger from '../utils/logger'
-import CommentRepository from '../database/repository/comment.repository'
-import CategoryRepository from '../database/repository/category.repository'
+import {
+    TagRepository,
+    CommentRepository,
+    CategoryRepository,
+    BlogRepository,
+    UserRepository
+} from '../database'
 
 class BlogService {
     readonly blogRepository: BlogRepository
     readonly commentRepository: CommentRepository
     readonly categoryRepository: CategoryRepository
+    readonly tagRepository: TagRepository
+    readonly userRepository: UserRepository
     constructor() {
         this.blogRepository = new BlogRepository()
         this.commentRepository = new CommentRepository()
         this.categoryRepository = new CategoryRepository()
+        this.tagRepository = new TagRepository()
+        this.userRepository = new UserRepository()
     }
 
     async CreateBlog(inputData: {
@@ -119,14 +127,66 @@ class BlogService {
             throw new Error(`Error getting blog: ${(error as Error).message}`)
         }
     }
-    async GetAllBlogsFromAuthorId(authorId: mongoose.Types.ObjectId) {
+    async GetAllBlogsFromAuthor(authorName: string) {
         try {
+            const author = await this.userRepository.GetUserByName(authorName)
+            if (!author) {
+                throw new Error(`Author With name ${authorName} Not Found`)
+            }
+            const authorId = author._id
             const blogs =
                 await this.blogRepository.getAllBlogsFromAuthorId(authorId)
             return blogs
         } catch (error) {
             Logger.error(`Error getting blogs: ${error}`)
-            throw new Error(`Error getting blogs: ${(error as Error).message}`)
+            Logger.error(
+                `Error getting blogs for author ${authorName}: ${(error as Error).message}`
+            )
+            throw new Error(
+                `Error getting blogs for author ${authorName}: ${(error as Error).message}`
+            )
+        }
+    }
+
+    async GetAllBlogsFromTags(tagName: string) {
+        try {
+            const tag = await this.tagRepository.getTagByName(tagName)
+            if (!tag) {
+                Logger.error('Tag not Found')
+                throw new Error(`Tag with name ${tagName} not found`)
+            }
+            const tagId = tag._id
+            const blogs = await this.blogRepository.getBlogsByTags(tagId)
+            return blogs
+        } catch (error) {
+            Logger.error(
+                `Error getting blogs for tag ${tagName}: ${(error as Error)?.message}`
+            )
+            throw new Error(
+                `Error getting blogs for tag ${tagName}: ${(error as Error)?.message}`
+            )
+        }
+    }
+
+    async GetAllBlogsFromCategory(categoryName: string) {
+        try {
+            const category =
+                await this.categoryRepository.getCategoryByName(categoryName)
+            if (!category) {
+                Logger.error('Category not Found')
+                throw new Error(`Category with name ${categoryName} not found`)
+            }
+            const categoryId = category._id
+            const blogs =
+                await this.blogRepository.getBlogsByCategory(categoryId)
+            return blogs
+        } catch (error) {
+            Logger.error(
+                `Error getting blogs for category ${categoryName}: ${(error as Error)?.message}`
+            )
+            throw new Error(
+                `Error getting blogs for category ${categoryName}: ${(error as Error)?.message}`
+            )
         }
     }
 

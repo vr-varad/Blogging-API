@@ -14,6 +14,21 @@ class TagRepository {
             throw new Error(`Error creating tags: ${(error as Error).message}`)
         }
     }
+    async getTagByName(tagName: string) {
+        try {
+            const tag = await Tag.findOne({
+                name: tagName
+            })
+            if (!tag) {
+                Logger.warn(`Tag with name ${tagName} not found`)
+                return null
+            }
+            return tag
+        } catch (error) {
+            Logger.error(`Error getting tags: ${error}`)
+            throw new Error(`Error getting tags: ${(error as Error).message}`)
+        }
+    }
     async getAllTags() {
         try {
             const tags = await Tag.find({})

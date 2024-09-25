@@ -17,6 +17,24 @@ class CategoryRepository {
             )
         }
     }
+
+    async getCategoryByName(catecoryName: string) {
+        try {
+            const category = await Category.findOne({
+                name: catecoryName
+            })
+            if (!category) {
+                Logger.warn(`Category with Name ${catecoryName} not found`)
+                return null
+            }
+            return category
+        } catch (error) {
+            Logger.error(`Error getting category: ${error}`)
+            throw new Error(
+                `Error getting category: ${(error as Error).message}`
+            )
+        }
+    }
     async getAllCategory() {
         try {
             const category = await Category.find({})

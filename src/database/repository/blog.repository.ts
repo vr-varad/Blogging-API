@@ -2,6 +2,8 @@
 import mongoose from 'mongoose'
 import Logger from '../../utils/logger'
 import { Blog, Category, Tag } from '../model'
+import redisClient from '../../utils/redisClient'
+import { JsonObject } from '@prisma/client/runtime/library'
 
 class BlogRepository {
     async createBlog(
@@ -89,7 +91,14 @@ class BlogRepository {
     }
     async getAllBlogs(limit: number = 10, offset: number = 0) {
         try {
+            const cachedBlogs = await redisClient.get('blogs')
+            if (cachedBlogs) {
+                return JSON.parse(cachedBlogs) as JsonObject
+            }
             const blogs = await Blog.find({}).skip(offset).limit(limit)
+            await redisClient.set('blogs', JSON.stringify(blogs), {
+                EX: 60 * 60
+            })
             return blogs
         } catch (error) {
             Logger.error(`Error getting blogs: ${error}`)

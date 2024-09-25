@@ -230,6 +230,12 @@ This document outlines the design of a **Personal Blogging Platform API** that a
 
 -   DELETE /api/v1/posts/:id: Delete a post (auth required, owner only).
 
+-   GET /api/v1/posts/:authorName: Get all posts by a specific author.
+
+-   GET /api/v1/posts/:tagName: Get all posts by a specific tag.
+
+-   GET /api/v1/posts/category/:categoryName: Get all posts by a specific category.
+
 #### 8.3. **Category & Tag Endpoints**
 
 -   POST /api/v1/categories: Create a new category (admin only).

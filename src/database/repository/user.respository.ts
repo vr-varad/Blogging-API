@@ -82,6 +82,22 @@ class UserRepository {
         }
     }
 
+    async GetUserByName(userName: string) {
+        try {
+            const user = await User.findOne({
+                username: userName
+            })
+            if (!user) {
+                Logger.warn(`User with UserName ${userName} Not Found`)
+                return null
+            }
+            return user
+        } catch (error) {
+            Logger.error(`Error getting user with name ${userName}: ${error}`)
+            throw new Error(`Error getting user: ${(error as Error).message}`)
+        }
+    }
+
     async GetUserByEmail(userEmail: string) {
         try {
             const user = await User.findOne({
