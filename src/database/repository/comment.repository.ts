@@ -2,6 +2,7 @@
 import mongoose from 'mongoose'
 import { Comment } from '../model'
 import Logger from '../../utils/logger'
+import redisClient from '../../utils/redisClient'
 
 class CommentRepository {
     async addComment(
@@ -15,6 +16,9 @@ class CommentRepository {
                 content,
                 authorId
             })
+
+            await redisClient.del('blogs')
+
             return comment
                 .save()
                 .then((comment) => comment.populate('authorId'))
@@ -53,6 +57,9 @@ class CommentRepository {
                 Logger.warn(`Comment With CommentId ${commentId} Not Found`)
                 return null
             }
+
+            await redisClient.del('blogs')
+
             return comment
         } catch (error) {
             Logger.error(`Error deleting comments: ${error}`)

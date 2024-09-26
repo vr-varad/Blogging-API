@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { Category } from '../model'
 import Logger from '../../utils/logger'
+import redisClient from '../../utils/redisClient'
 
 class CategoryRepository {
     async createNewCategory(name: string, description: string) {
@@ -9,6 +10,7 @@ class CategoryRepository {
                 name,
                 description
             })
+            await redisClient.del('blogs')
             return category
         } catch (error) {
             Logger.error(`Error creating category: ${error}`)

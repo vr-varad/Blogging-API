@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose'
 
-interface BlogDoc {
+export interface BlogDoc extends mongoose.Document {
     title: string
     content: string
     author: mongoose.Types.ObjectId

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { Tag } from '../model'
 import Logger from '../../utils/logger'
+import redisClient from '../../utils/redisClient'
 
 class TagRepository {
     async createTags(name: string) {
@@ -8,6 +9,7 @@ class TagRepository {
             const tags = await Tag.create({
                 name
             })
+            await redisClient.del('blogs')
             return tags
         } catch (error) {
             Logger.error(`Error creating tags: ${error}`)

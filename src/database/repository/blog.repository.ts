@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 import Logger from '../../utils/logger'
 import { Blog, Category, Tag } from '../model'
 import redisClient from '../../utils/redisClient'
-import { JsonObject } from '@prisma/client/runtime/library'
+import { BlogDoc } from '../model/Blog'
 
 class BlogRepository {
     async createBlog(
@@ -39,6 +39,11 @@ class BlogRepository {
 
             await blog.save()
 
+            await redisClient.del('blogs')
+            await redisClient.del('blogsByAuthor')
+            await redisClient.del('blogsByTag')
+            await redisClient.del('blogsByCategory')
+
             return blog
         } catch (error) {
             Logger.error(`Error creating blog: ${error}`)
@@ -52,6 +57,12 @@ class BlogRepository {
                 Logger.warn(`Blog with Id ${blogId} Not Found`)
                 return null
             }
+
+            await redisClient.del('blogs')
+            await redisClient.del('blogsByAuthor')
+            await redisClient.del('blogsByTag')
+            await redisClient.del('blogsByCategory')
+
             return blog
         } catch (error) {
             Logger.error(`Error deleting blog: ${error}`)
@@ -83,6 +94,12 @@ class BlogRepository {
             blog.title = title || blog.title
             blog.content = content || blog.content
             await blog.save()
+
+            await redisClient.del('blogs')
+            await redisClient.del('blogsByAuthor')
+            await redisClient.del('blogsByTag')
+            await redisClient.del('blogsByCategory')
+
             return blog
         } catch (error) {
             Logger.error(`Error updating blog: ${error}`)
@@ -93,7 +110,7 @@ class BlogRepository {
         try {
             const cachedBlogs = await redisClient.get('blogs')
             if (cachedBlogs) {
-                return JSON.parse(cachedBlogs) as JsonObject
+                return JSON.parse(cachedBlogs) as BlogDoc
             }
             const blogs = await Blog.find({}).skip(offset).limit(limit)
             await redisClient.set('blogs', JSON.stringify(blogs), {
@@ -107,8 +124,15 @@ class BlogRepository {
     }
     async getAllBlogsFromAuthorId(authorId: mongoose.Types.ObjectId) {
         try {
+            const cachedBlogsByAuthor = await redisClient.get('blogsByAuthor')
+            if (cachedBlogsByAuthor) {
+                return JSON.parse(cachedBlogsByAuthor) as BlogDoc
+            }
             const blogs = await Blog.find({
                 author: authorId
+            })
+            await redisClient.set('blogsByAuthor', JSON.stringify(blogs), {
+                EX: 60 * 60
             })
             if (blogs.length === 0) {
                 Logger.warn(`No blogs found for author with Id ${authorId}`)
@@ -121,6 +145,10 @@ class BlogRepository {
     }
     async getBlogsById(blogId: mongoose.Types.ObjectId) {
         try {
+            const cachedBlog = await redisClient.get(`blog:${blogId}`)
+            if (cachedBlog) {
+                return JSON.parse(cachedBlog) as BlogDoc
+            }
             const blog = await Blog.findById(blogId).populate([
                 'category',
                 'tags',
@@ -131,6 +159,9 @@ class BlogRepository {
                 Logger.warn(`Blog with blogId ${blogId} doesn't exist.`)
                 return null
             }
+            await redisClient.set(`blog:${blogId}`, JSON.stringify(blog), {
+                EX: 60 * 60
+            })
             return blog
         } catch (error) {
             Logger.error(`Error getting blogs: ${error}`)
@@ -139,7 +170,16 @@ class BlogRepository {
     }
     async getBlogsByTags(tag: mongoose.Types.ObjectId) {
         try {
+            const cachedBlogsByTag = await redisClient.get('blogsByTag')
+            if (cachedBlogsByTag) {
+                return JSON.parse(cachedBlogsByTag) as BlogDoc
+            }
             const blogs = await Blog.find({ tags: { $in: [tag] } })
+            if (blogs.length) {
+                await redisClient.set('blogsByTag', JSON.stringify(blogs), {
+                    EX: 60 * 60
+                })
+            }
             return blogs.length ? blogs : null
         } catch (error) {
             Logger.error(`Error getting blogs: ${error}`)
@@ -148,7 +188,15 @@ class BlogRepository {
     }
     async getBlogsByCategory(category: mongoose.Types.ObjectId) {
         try {
+            const cachedBlogsByCategory =
+                await redisClient.get('blogsByCategory')
+            if (cachedBlogsByCategory) {
+                return JSON.parse(cachedBlogsByCategory) as BlogDoc
+            }
             const blogs = await Blog.find({ category: { $in: [category] } })
+            await redisClient.set('blogsByCategory', JSON.stringify(blogs), {
+                EX: 60 * 60
+            })
             return blogs.length ? blogs : null
         } catch (error) {
             Logger.error(`Error getting blogs: ${error}`)
