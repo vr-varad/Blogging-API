@@ -8,6 +8,9 @@ import {
     DeleteBlog,
     GetAllBlogs,
     GetBlogById,
+    GetBlogsByCategory,
+    GetBlogsdByAuthor,
+    GetBlogsdByTag,
     UpdateBlog
 } from '../controller/blog.controller'
 
@@ -20,5 +23,8 @@ router.post('/', CreateBlog)
 router.put('/:id', UpdateBlog)
 router.delete('/:id', DeleteBlog)
 router.post('/:id/comment', AddComment)
+router.get('/author/:authorName', GetBlogsdByAuthor)
+router.get('/tag/:tagName', GetBlogsdByTag)
+router.get('/category/:categoryName', GetBlogsByCategory)
 
 export { router as BlogRouter }

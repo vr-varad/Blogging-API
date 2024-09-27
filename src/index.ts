@@ -9,7 +9,7 @@ const StartServer = async () => {
     await connectDB()
     expressApp(app)
     app.listen(config.PORT, () => {
-        Logger.log(`Serever Starting at Port: ${config.PORT}`)
+        Logger.log(`Server Starting at Port: ${config.PORT}`)
     })
 }
 

@@ -163,11 +163,73 @@ const AddComment = async (req: Request, res: Response) => {
     }
 }
 
+const GetBlogsdByAuthor = async (req: Request, res: Response) => {
+    try {
+        const { authorName } = req.params
+        const blogs = await blogService.GetAllBlogsFromAuthor(authorName)
+        return res.status(200).json({
+            success: true,
+            blogs
+        })
+    } catch (error) {
+        Logger.error(
+            `Error during getting blog by author: ${(error as Error).message}`
+        )
+        return res.status(500).json({
+            success: false,
+            message: 'Error getting blog by author',
+            error: (error as Error).message
+        })
+    }
+}
+
+const GetBlogsdByTag = async (req: Request, res: Response) => {
+    try {
+        const { tagName } = req.params
+        const blogs = await blogService.GetAllBlogsFromTags(tagName)
+        return res.status(200).json({
+            success: true,
+            blogs
+        })
+    } catch (error) {
+        Logger.error(
+            `Error during getting blog by tag: ${(error as Error).message}`
+        )
+        return res.status(500).json({
+            success: false,
+            message: 'Error getting blog by tags',
+            error: (error as Error).message
+        })
+    }
+}
+const GetBlogsByCategory = async (req: Request, res: Response) => {
+    try {
+        const { categoryName } = req.params
+        const blogs = await blogService.GetAllBlogsFromCategory(categoryName)
+        return res.status(200).json({
+            success: true,
+            blogs
+        })
+    } catch (error) {
+        Logger.error(
+            `Error during getting blog by category: ${(error as Error).message}`
+        )
+        return res.status(500).json({
+            success: false,
+            message: 'Error getting blog by category',
+            error: (error as Error).message
+        })
+    }
+}
+
 export {
     CreateBlog,
     GetAllBlogs,
     GetBlogById,
     UpdateBlog,
     DeleteBlog,
-    AddComment
+    AddComment,
+    GetBlogsByCategory,
+    GetBlogsdByTag,
+    GetBlogsdByAuthor
 }
