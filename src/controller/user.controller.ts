@@ -77,7 +77,9 @@ const userProfile = async (req: Request, res: Response) => {
             ...user
         })
     } catch (error) {
-        Logger.error(`Error during user sign in: ${(error as Error).message}`)
+        Logger.error(
+            `Error during getting Profile: ${(error as Error).message}`
+        )
         return res.status(500).json({
             success: false,
             message: 'Error signing in user',
@@ -86,4 +88,26 @@ const userProfile = async (req: Request, res: Response) => {
     }
 }
 
-export { userSignUp, userSignIn, userProfile }
+const userDelete = async (req: Request, res: Response) => {
+    try {
+        const { email }: { email: string } = req.body
+        const { _id: objectId, role } = req.user
+        const userId = new mongoose.Types.ObjectId(objectId)
+        const user = await userService.DeleteProfile(userId, email, role)
+        return res.status(200).json({
+            success: true,
+            user
+        })
+    } catch (error) {
+        Logger.error(
+            `Error during user deleting Profile: ${(error as Error).message}`
+        )
+        return res.status(500).json({
+            success: false,
+            message: 'Error signing in user',
+            error: (error as Error).message
+        })
+    }
+}
+
+export { userSignUp, userSignIn, userProfile, userDelete }

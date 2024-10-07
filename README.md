@@ -212,29 +212,31 @@ This document outlines the design of a **Personal Blogging Platform API** that a
 
 #### 8.1. **User Endpoints**
 
--   POST /api/v1/users/signup: Register a new user.
+-   POST /api/v1/user/signup: Register a new user.
 
--   POST /api/v1/users/login: Login and retrieve JWT token.
+-   POST /api/v1/user/login: Login and retrieve JWT token.
 
--   PUT /api/v1/users/profile: Update user profile (auth required).
+-   PUT /api/v1/user/profile: Update user profile (auth required).
+
+-   DELETE /api/v1/user/delete: Delete user profile (either the admin or the user itelf)
 
 #### 8.2. **Blog Post Endpoints**
 
--   POST /api/v1/posts: Create a new post (auth required).
+-   POST /api/v1/blogs: Create a new post (auth required).
 
--   GET /api/v1/posts: Get a list of all posts (public, with pagination).
+-   GET /api/v1/blogs: Get a list of all blogs (public, with pagination).
 
--   GET /api/v1/posts/:id: Get a specific post by ID (public).
+-   GET /api/v1/blogs/:id: Get a specific post by ID (public).
 
--   PUT /api/v1/posts/:id: Update a post (auth required, owner only).
+-   PUT /api/v1/blogs/:id: Update a post (auth required, owner only).
 
--   DELETE /api/v1/posts/:id: Delete a post (auth required, owner only).
+-   DELETE /api/v1/blogs/:id: Delete a post (auth required, owner only).
 
--   GET /api/v1/posts/author/:authorName: Get all posts by a specific author.
+-   GET /api/v1/blogs/author/:authorName: Get all blogs by a specific author.
 
--   GET /api/v1/posts/tag/:tagName: Get all posts by a specific tag.
+-   GET /api/v1/blogs/tag/:tagName: Get all blogs by a specific tag.
 
--   GET /api/v1/posts/category/:categoryName: Get all posts by a specific category.
+-   GET /api/v1/blogs/category/:categoryName: Get all blogs by a specific category.
 
 #### 8.3. **Category & Tag Endpoints**
 

@@ -108,6 +108,34 @@ class UserService {
             throw new Error('Failed to get a user')
         }
     }
+
+    async DeleteProfile(
+        userId: mongoose.Types.ObjectId,
+        userEmail: string,
+        role: string
+    ) {
+        try {
+            const user = await this.repository.GetUserByEmail(userEmail)
+            let deletedUser
+            if (user) {
+                if (role === 'admin') {
+                    deletedUser = await this.repository.DeleteUser(userId)
+                } else if (role === 'user') {
+                    if (user._id.toString() !== userId.toString()) {
+                        throw new Error('User Not Authorised')
+                    }
+                    deletedUser = await this.repository.DeleteUser(userId)
+                } else {
+                    throw new Error('Invalid Role')
+                }
+                return deletedUser
+            }
+            throw new Error('User Not Found')
+        } catch (error) {
+            Logger.error(`Error deleting user: ${(error as Error).message}`)
+            throw new Error('Failed to delete a user')
+        }
+    }
 }
 
 export default UserService

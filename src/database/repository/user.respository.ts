@@ -113,6 +113,16 @@ class UserRepository {
             throw new Error(`Error getting user: ${(error as Error).message}`)
         }
     }
+
+    async DeleteUser(userId: mongoose.Types.ObjectId) {
+        try {
+            const user = await User.findByIdAndDelete(userId)
+            return user
+        } catch (error) {
+            Logger.error(`Error deleting user with email ${userId}: ${error}`)
+            throw new Error(`Error deleting user: ${(error as Error).message}`)
+        }
+    }
 }
 
 export default UserRepository
