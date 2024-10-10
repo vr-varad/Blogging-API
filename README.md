@@ -30,7 +30,6 @@ This document outlines the design of a **Personal Blogging Platform API** that a
 
 -   **Authentication**: JSON Web Tokens (JWT)
 
-
 ---
 
 ### 5. **API Requirements**
@@ -91,13 +90,9 @@ This document outlines the design of a **Personal Blogging Platform API** that a
 
   "passwordHash": String,
 
-  "profile": {
+  "bio": String,
 
-    "bio": String,
-
-    "avatarUrl": String
-
-  },
+  "salt" : String,
 
   "role": String, // admin or user
 
@@ -126,8 +121,6 @@ This document outlines the design of a **Personal Blogging Platform API** that a
   "category": ObjectId (Category),
 
   "tags": [ObjectId (Tag)],
-
-  "published": Boolean,
 
   "createdAt": Date,
 
