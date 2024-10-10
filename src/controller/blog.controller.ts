@@ -130,7 +130,7 @@ const DeleteBlog = async (req: Request, res: Response) => {
         Logger.error(`Error during updating blog: ${(error as Error).message}`)
         return res.status(500).json({
             success: false,
-            message: 'Error updating blog',
+            message: 'Error deleting blog',
             error: (error as Error).message
         })
     }

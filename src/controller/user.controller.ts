@@ -27,7 +27,7 @@ const userSignUp = async (req: Request, res: Response) => {
     try {
         const { username, email, password, role, bio }: UserSignInInput =
             req.body
-        const response = await userService.SignUp(
+        const token = await userService.SignUp(
             username,
             bio,
             email,
@@ -36,8 +36,8 @@ const userSignUp = async (req: Request, res: Response) => {
         )
         return res.status(201).json({
             success: true,
-            message: response.message,
-            token: response.token
+            message: 'User successfully Signed Up',
+            token
         })
     } catch (error) {
         Logger.error(`Error during user sign up: ${(error as Error).message}`)
@@ -52,11 +52,11 @@ const userSignUp = async (req: Request, res: Response) => {
 const userSignIn = async (req: Request, res: Response) => {
     try {
         const { email, password }: UserSignInInput = req.body
-        const response = await userService.SignIn(email, password)
+        const token = await userService.SignIn(email, password)
         return res.status(200).json({
             success: true,
-            message: response.message,
-            token: response.token
+            message: 'User SuccessFully Signed In',
+            token
         })
     } catch (error) {
         Logger.error(`Error during user sign in: ${(error as Error).message}`)
@@ -82,7 +82,7 @@ const userProfile = async (req: Request, res: Response) => {
         )
         return res.status(500).json({
             success: false,
-            message: 'Error signing in user',
+            message: 'Error getting user profile',
             error: (error as Error).message
         })
     }
@@ -104,7 +104,7 @@ const userDelete = async (req: Request, res: Response) => {
         )
         return res.status(500).json({
             success: false,
-            message: 'Error signing in user',
+            message: 'Error deleting user',
             error: (error as Error).message
         })
     }

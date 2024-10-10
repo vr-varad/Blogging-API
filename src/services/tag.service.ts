@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { TagRepository } from '../database'
+import { ServiceError } from '../utils/errorHandler'
 import Logger from '../utils/logger'
 
 class TagService {
@@ -15,7 +16,9 @@ class TagService {
             return tag
         } catch (error) {
             Logger.error(`Error Creating Tags: ${error}`)
-            throw new Error(`Error Creating Tags: ${(error as Error).message}`)
+            throw new ServiceError(
+                `Error Creating Tags: ${(error as Error).message}`
+            )
         }
     }
 
@@ -25,7 +28,9 @@ class TagService {
             return tags
         } catch (error) {
             Logger.error(`Error Creating Tags: ${error}`)
-            throw new Error(`Error Creating Tags: ${(error as Error).message}`)
+            throw new ServiceError(
+                `Error Creating Tags: ${(error as Error).message}`
+            )
         }
     }
 }

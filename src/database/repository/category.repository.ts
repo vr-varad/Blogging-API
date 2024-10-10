@@ -2,6 +2,7 @@
 import { Category } from '../model'
 import Logger from '../../utils/logger'
 import redisClient from '../../utils/redisClient'
+import { DatabaseError } from '../../utils/errorHandler'
 
 class CategoryRepository {
     async createNewCategory(name: string, description: string) {
@@ -14,7 +15,7 @@ class CategoryRepository {
             return category
         } catch (error) {
             Logger.error(`Error creating category: ${error}`)
-            throw new Error(
+            throw new DatabaseError(
                 `Error creating category: ${(error as Error).message}`
             )
         }
@@ -31,8 +32,8 @@ class CategoryRepository {
             }
             return category
         } catch (error) {
-            Logger.error(`Error getting category: ${error}`)
-            throw new Error(
+            Logger.error(`Error getting category by name: ${error}`)
+            throw new DatabaseError(
                 `Error getting category: ${(error as Error).message}`
             )
         }
@@ -42,8 +43,8 @@ class CategoryRepository {
             const category = await Category.find({})
             return category
         } catch (error) {
-            Logger.error(`Error getting category: ${error}`)
-            throw new Error(
+            Logger.error(`Error getting categories: ${error}`)
+            throw new DatabaseError(
                 `Error getting catecory: ${(error as Error).message}`
             )
         }

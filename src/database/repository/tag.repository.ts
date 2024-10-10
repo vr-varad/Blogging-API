@@ -2,6 +2,7 @@
 import { Tag } from '../model'
 import Logger from '../../utils/logger'
 import redisClient from '../../utils/redisClient'
+import { DatabaseError } from '../../utils/errorHandler'
 
 class TagRepository {
     async createTags(name: string) {
@@ -13,7 +14,9 @@ class TagRepository {
             return tags
         } catch (error) {
             Logger.error(`Error creating tags: ${error}`)
-            throw new Error(`Error creating tags: ${(error as Error).message}`)
+            throw new DatabaseError(
+                `Error creating tags: ${(error as Error).message}`
+            )
         }
     }
     async getTagByName(tagName: string) {
@@ -27,8 +30,10 @@ class TagRepository {
             }
             return tag
         } catch (error) {
-            Logger.error(`Error getting tags: ${error}`)
-            throw new Error(`Error getting tags: ${(error as Error).message}`)
+            Logger.error(`Error getting tags by name: ${error}`)
+            throw new DatabaseError(
+                `Error getting tags: ${(error as Error).message}`
+            )
         }
     }
     async getAllTags() {
@@ -37,7 +42,9 @@ class TagRepository {
             return tags
         } catch (error) {
             Logger.error(`Error getting tags: ${error}`)
-            throw new Error(`Error getting tags: ${(error as Error).message}`)
+            throw new DatabaseError(
+                `Error getting tags: ${(error as Error).message}`
+            )
         }
     }
 }

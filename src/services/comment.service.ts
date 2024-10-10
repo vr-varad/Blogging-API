@@ -2,6 +2,11 @@
 import mongoose from 'mongoose'
 import { CommentRepository } from '../database'
 import Logger from '../utils/logger'
+import {
+    NotFoundError,
+    ServiceError,
+    UnAuthorizedError
+} from '../utils/errorHandler'
 
 class CommentService {
     readonly commentRepository: CommentRepository
@@ -19,11 +24,11 @@ class CommentService {
             const comment =
                 await this.commentRepository.getCommentFromCommentId(commentId)
             if (!comment) {
-                throw new Error('Comment Not Found')
+                throw new NotFoundError('Comment Not Found')
             }
             if (comment.authorId.toString() != authorId.toString()) {
-                throw new Error(
-                    'Not Authorized: You are not the author of this comment'
+                throw new UnAuthorizedError(
+                    'UnAuthorized: You are not the author of this comment'
                 )
             }
             const updatedComment = await this.commentRepository.updateComment(
@@ -33,7 +38,7 @@ class CommentService {
             return updatedComment
         } catch (error) {
             Logger.error(`Error Updating Comment Service: ${error}`)
-            throw new Error(
+            throw new ServiceError(
                 `Error Updating Comment Service: ${(error as Error).message}`
             )
         }
@@ -46,11 +51,11 @@ class CommentService {
             const comment =
                 await this.commentRepository.getCommentFromCommentId(commentId)
             if (!comment) {
-                throw new Error('Comment Not Found')
+                throw new NotFoundError('Comment Not Found')
             }
             if (comment.authorId.toString() != authorId.toString()) {
-                throw new Error(
-                    'Not Authorized: You are not the author of this comment'
+                throw new UnAuthorizedError(
+                    'UnAuthorized: You are not the author of this comment'
                 )
             }
             const deletedComment =
@@ -58,7 +63,7 @@ class CommentService {
             return deletedComment
         } catch (error) {
             Logger.error(`Error Deleting Comment: ${error}`)
-            throw new Error(
+            throw new ServiceError(
                 `Error Deleting Comment: ${(error as Error).message}`
             )
         }

@@ -8,6 +8,11 @@ import {
     BlogRepository,
     UserRepository
 } from '../database'
+import {
+    NotFoundError,
+    ServiceError,
+    UnAuthorizedError
+} from '../utils/errorHandler'
 
 class BlogService {
     readonly blogRepository: BlogRepository
@@ -42,7 +47,9 @@ class BlogService {
             return blog
         } catch (error) {
             Logger.error(`Error creating blog: ${error}`)
-            throw new Error(`Error creating blog: ${(error as Error).message}`)
+            throw new ServiceError(
+                `Error creating blog: ${(error as Error).message}`
+            )
         }
     }
     async UpdateBlog(
@@ -58,17 +65,16 @@ class BlogService {
             const blog = await this.blogRepository.getBlogsById(blogId)
 
             if (!blog) {
-                throw new Error('Blog not found')
+                throw new NotFoundError('Blog not found')
             }
 
-            if (!blog.author.equals(authorId)) {
-                throw new Error(
+            if (blog.author._id !== authorId) {
+                throw new UnAuthorizedError(
                     'Unauthorized: You are not the author of this blog'
                 )
             }
 
             const { title, content, category } = inputData
-
             const updatedBlog = await this.blogRepository.updateBlog(
                 blogId,
                 title || blog.title,
@@ -78,7 +84,9 @@ class BlogService {
             return updatedBlog
         } catch (error) {
             Logger.error(`Error updating blog: ${error}`)
-            throw new Error(`Error updating blog: ${(error as Error).message}`)
+            throw new ServiceError(
+                `Error updating blog: ${(error as Error).message}`
+            )
         }
     }
     async DeleteBlog(
@@ -89,11 +97,11 @@ class BlogService {
             const blog = await this.blogRepository.getBlogsById(blogId)
 
             if (!blog) {
-                throw new Error('Blog not found')
+                throw new NotFoundError('Blog not found')
             }
 
             if (!blog.author.equals(authorId)) {
-                throw new Error(
+                throw new UnAuthorizedError(
                     'Unauthorized: You are not the author of this blog'
                 )
             }
@@ -101,7 +109,9 @@ class BlogService {
             return blog
         } catch (error) {
             Logger.error(`Error deleting blog: ${error}`)
-            throw new Error(`Error deleting blog: ${(error as Error).message}`)
+            throw new ServiceError(
+                `Error deleting blog: ${(error as Error).message}`
+            )
         }
     }
     async GetAllBlogs(page: number, pageSize: number) {
@@ -112,37 +122,42 @@ class BlogService {
             return blogs
         } catch (error) {
             Logger.error(`Error getting blogs: ${error}`)
-            throw new Error(`Error getting blogs: ${(error as Error).message}`)
+            throw new ServiceError(
+                `Error getting blogs: ${(error as Error).message}`
+            )
         }
     }
     async GetBlogById(blogId: mongoose.Types.ObjectId) {
         try {
             const blog = await this.blogRepository.getBlogsById(blogId)
             if (!blog) {
-                throw new Error(`Blog With Id ${blogId} Not Found`)
+                throw new NotFoundError(`Blog With Id ${blogId} Not Found`)
             }
             return blog
         } catch (error) {
             Logger.error(`Error getting blog: ${error}`)
-            throw new Error(`Error getting blog: ${(error as Error).message}`)
+            throw new ServiceError(
+                `Error getting blog: ${(error as Error).message}`
+            )
         }
     }
     async GetAllBlogsFromAuthor(authorName: string) {
         try {
             const author = await this.userRepository.GetUserByName(authorName)
             if (!author) {
-                throw new Error(`Author With name ${authorName} Not Found`)
+                throw new NotFoundError(
+                    `Author With name ${authorName} Not Found`
+                )
             }
             const authorId = author._id
             const blogs =
                 await this.blogRepository.getAllBlogsFromAuthorId(authorId)
             return blogs
         } catch (error) {
-            Logger.error(`Error getting blogs: ${error}`)
             Logger.error(
                 `Error getting blogs for author ${authorName}: ${(error as Error).message}`
             )
-            throw new Error(
+            throw new ServiceError(
                 `Error getting blogs for author ${authorName}: ${(error as Error).message}`
             )
         }
@@ -152,8 +167,7 @@ class BlogService {
         try {
             const tag = await this.tagRepository.getTagByName(tagName)
             if (!tag) {
-                Logger.error('Tag not Found')
-                throw new Error(`Tag with name ${tagName} not found`)
+                throw new NotFoundError(`Tag with name ${tagName} not found`)
             }
             const tagId = tag._id
             const blogs = await this.blogRepository.getBlogsByTags(tagId)
@@ -162,7 +176,7 @@ class BlogService {
             Logger.error(
                 `Error getting blogs for tag ${tagName}: ${(error as Error)?.message}`
             )
-            throw new Error(
+            throw new ServiceError(
                 `Error getting blogs for tag ${tagName}: ${(error as Error)?.message}`
             )
         }
@@ -173,8 +187,9 @@ class BlogService {
             const category =
                 await this.categoryRepository.getCategoryByName(categoryName)
             if (!category) {
-                Logger.error('Category not Found')
-                throw new Error(`Category with name ${categoryName} not found`)
+                throw new NotFoundError(
+                    `Category with name ${categoryName} not found`
+                )
             }
             const categoryId = category._id
             const blogs =
@@ -184,7 +199,7 @@ class BlogService {
             Logger.error(
                 `Error getting blogs for category ${categoryName}: ${(error as Error)?.message}`
             )
-            throw new Error(
+            throw new ServiceError(
                 `Error getting blogs for category ${categoryName}: ${(error as Error)?.message}`
             )
         }
@@ -198,19 +213,21 @@ class BlogService {
         try {
             const blog = await this.blogRepository.getBlogsById(blogId)
             if (!blog) {
-                throw new Error(`Blog with Id ${blogId} not found`)
+                throw new NotFoundError(`Blog with Id ${blogId} not found`)
             }
             const comment = await this.commentRepository.addComment(
                 blogId,
                 authorId,
                 content
             )
-            blog.comments.push(comment._id)
-            await blog.save()
-            return blog
+            const updateBlog = await this.blogRepository.addCommenttoBlog(
+                blogId,
+                comment._id
+            )
+            return updateBlog
         } catch (error) {
             Logger.error(`Error addding comment to blogs: ${error}`)
-            throw new Error(
+            throw new ServiceError(
                 `Error addding comment to blogs: ${(error as Error).message}`
             )
         }

@@ -3,6 +3,7 @@
 import mongoose from 'mongoose'
 import Logger from '../../utils/logger'
 import { User } from '../model'
+import { DatabaseError, NotFoundError } from '../../utils/errorHandler'
 
 class UserRepository {
     async createUser(
@@ -25,7 +26,9 @@ class UserRepository {
             return user
         } catch (error) {
             Logger.error(`Error creating user: ${error}`)
-            throw new Error(`Error creating user: ${(error as Error).message}`)
+            throw new DatabaseError(
+                `Error creating user: ${(error as Error).message}`
+            )
         }
     }
 
@@ -39,7 +42,7 @@ class UserRepository {
             const user = await User.findById(userId)
             if (!user) {
                 Logger.error(`User with userId ${userId} doesn't exist`)
-                throw new Error('User not found')
+                throw new NotFoundError('User not found')
             } else {
                 user.username = username || user.username
                 user.bio = bio || user.bio
@@ -50,7 +53,9 @@ class UserRepository {
             }
         } catch (error) {
             Logger.error(`Error updating user with ID ${userId}: ${error}`)
-            throw new Error(`Error updating user: ${(error as Error).message}`)
+            throw new DatabaseError(
+                `Error updating user: ${(error as Error).message}`
+            )
         }
     }
 
@@ -64,7 +69,9 @@ class UserRepository {
             return safeUsers
         } catch (error) {
             Logger.error(`Error getting user: ${error}`)
-            throw new Error(`Error getting user: ${(error as Error).message}`)
+            throw new DatabaseError(
+                `Error getting user: ${(error as Error).message}`
+            )
         }
     }
 
@@ -78,7 +85,9 @@ class UserRepository {
             return user
         } catch (error) {
             Logger.error(`Error getting user with ID ${userId}: ${error}`)
-            throw new Error(`Error getting user: ${(error as Error).message}`)
+            throw new DatabaseError(
+                `Error getting user: ${(error as Error).message}`
+            )
         }
     }
 
@@ -94,7 +103,9 @@ class UserRepository {
             return user
         } catch (error) {
             Logger.error(`Error getting user with name ${userName}: ${error}`)
-            throw new Error(`Error getting user: ${(error as Error).message}`)
+            throw new DatabaseError(
+                `Error getting user: ${(error as Error).message}`
+            )
         }
     }
 
@@ -110,7 +121,9 @@ class UserRepository {
             return user
         } catch (error) {
             Logger.error(`Error getting user with email ${userEmail}: ${error}`)
-            throw new Error(`Error getting user: ${(error as Error).message}`)
+            throw new DatabaseError(
+                `Error getting user: ${(error as Error).message}`
+            )
         }
     }
 
@@ -120,7 +133,9 @@ class UserRepository {
             return user
         } catch (error) {
             Logger.error(`Error deleting user with email ${userId}: ${error}`)
-            throw new Error(`Error deleting user: ${(error as Error).message}`)
+            throw new DatabaseError(
+                `Error deleting user: ${(error as Error).message}`
+            )
         }
     }
 }

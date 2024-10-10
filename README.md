@@ -30,11 +30,6 @@ This document outlines the design of a **Personal Blogging Platform API** that a
 
 -   **Authentication**: JSON Web Tokens (JWT)
 
--   **Search/Filter**: ElasticSearch (optional for advanced querying)
-
--   **Cloud Storage**: AWS S3 or a similar service for image uploads
-
--   **Deployment**: Docker, Kubernetes, AWS
 
 ---
 
@@ -285,8 +280,6 @@ This document outlines the design of a **Personal Blogging Platform API** that a
 -   **Real-time comments**: Use WebSockets to provide live updates for comments.
 
 -   **Likes/Dislikes**: Allow users to like/dislike blog posts.
-
--   **Full-text search**: Use ElasticSearch for faster search functionality.
 
 ### 12. **Conclusion**
 

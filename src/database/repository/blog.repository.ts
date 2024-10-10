@@ -4,6 +4,7 @@ import Logger from '../../utils/logger'
 import { Blog, Category, Tag } from '../model'
 import redisClient from '../../utils/redisClient'
 import { BlogDoc } from '../model/Blog'
+import { DatabaseError, NotFoundError } from '../../utils/errorHandler'
 
 class BlogRepository {
     async createBlog(
@@ -47,7 +48,9 @@ class BlogRepository {
             return blog
         } catch (error) {
             Logger.error(`Error creating blog: ${error}`)
-            throw new Error(`Error creating blog: ${(error as Error).message}`)
+            throw new DatabaseError(
+                `Error creating blog: ${(error as Error).message}`
+            )
         }
     }
     async deleteBlog(blogId: mongoose.Types.ObjectId) {
@@ -66,7 +69,9 @@ class BlogRepository {
             return blog
         } catch (error) {
             Logger.error(`Error deleting blog: ${error}`)
-            throw new Error(`Error deleting blog: ${(error as Error).message}`)
+            throw new DatabaseError(
+                `Error deleting blog: ${(error as Error).message}`
+            )
         }
     }
     async updateBlog(
@@ -103,7 +108,9 @@ class BlogRepository {
             return blog
         } catch (error) {
             Logger.error(`Error updating blog: ${error}`)
-            throw new Error(`Error updating blog: ${(error as Error).message}`)
+            throw new DatabaseError(
+                `Error updating blog: ${(error as Error).message}`
+            )
         }
     }
     async getAllBlogs(limit: number = 10, offset: number = 0) {
@@ -119,7 +126,9 @@ class BlogRepository {
             return blogs
         } catch (error) {
             Logger.error(`Error getting blogs: ${error}`)
-            throw new Error(`Error getting blogs: ${(error as Error).message}`)
+            throw new DatabaseError(
+                `Error getting blogs: ${(error as Error).message}`
+            )
         }
     }
     async getAllBlogsFromAuthorId(authorId: mongoose.Types.ObjectId) {
@@ -139,8 +148,12 @@ class BlogRepository {
             }
             return blogs
         } catch (error) {
-            Logger.error(`Error getting blogs: ${error}`)
-            throw new Error(`Error getting blogs: ${(error as Error).message}`)
+            Logger.error(
+                `Error getting blogs with author id ${authorId}: ${error}`
+            )
+            throw new DatabaseError(
+                `Error getting blogs: ${(error as Error).message}`
+            )
         }
     }
     async getBlogsById(blogId: mongoose.Types.ObjectId) {
@@ -164,8 +177,10 @@ class BlogRepository {
             })
             return blog
         } catch (error) {
-            Logger.error(`Error getting blogs: ${error}`)
-            throw new Error(`Error getting blogs: ${(error as Error).message}`)
+            Logger.error(`Error getting blog with id ${blogId}: ${error}`)
+            throw new DatabaseError(
+                `Error getting blogs: ${(error as Error).message}`
+            )
         }
     }
     async getBlogsByTags(tag: mongoose.Types.ObjectId) {
@@ -182,8 +197,10 @@ class BlogRepository {
             }
             return blogs.length ? blogs : null
         } catch (error) {
-            Logger.error(`Error getting blogs: ${error}`)
-            throw new Error(`Error getting blogs: ${(error as Error).message}`)
+            Logger.error(`Error getting blogs by tags: ${error}`)
+            throw new DatabaseError(
+                `Error getting blogs: ${(error as Error).message}`
+            )
         }
     }
     async getBlogsByCategory(category: mongoose.Types.ObjectId) {
@@ -199,8 +216,31 @@ class BlogRepository {
             })
             return blogs.length ? blogs : null
         } catch (error) {
-            Logger.error(`Error getting blogs: ${error}`)
-            throw new Error(`Error getting blogs: ${(error as Error).message}`)
+            Logger.error(`Error getting blogs by category: ${error}`)
+            throw new DatabaseError(
+                `Error getting blogs: ${(error as Error).message}`
+            )
+        }
+    }
+
+    async addCommenttoBlog(
+        blogId: mongoose.Types.ObjectId,
+        commentId: mongoose.Types.ObjectId
+    ) {
+        try {
+            const blog = await Blog.findById(blogId)
+            if (blog) {
+                blog.comments.push(commentId)
+                await blog.save()
+                return blog
+            }
+            Logger.warn(`Blog with BlogId ${blogId} not found`)
+            throw new NotFoundError(`Blog with BlogId ${blogId} not found`)
+        } catch (error) {
+            Logger.error(`Error adding comment to blogs: ${error}`)
+            throw new DatabaseError(
+                `Error adding comment to blogs: ${(error as Error).message}`
+            )
         }
     }
 }

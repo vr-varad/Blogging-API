@@ -7,6 +7,11 @@ import {
     GenerateToken,
     VerifyPassword
 } from '../utils/password'
+import {
+    NotFoundError,
+    ServiceError,
+    UnAuthorizedError
+} from '../utils/errorHandler'
 
 class UserService {
     readonly repository: UserRepository
@@ -25,7 +30,7 @@ class UserService {
             const user = await this.repository.GetUserByEmail(email)
             if (user) {
                 Logger.log('User Already Exists')
-                throw new Error('Error in Signing Up User')
+                return
             }
 
             const salt = await GenerateSalt()
@@ -47,14 +52,10 @@ class UserService {
                 role: newUser.role
             })
 
-            return {
-                success: true,
-                message: 'User Successfully Created',
-                token
-            }
+            return token
         } catch (error) {
             Logger.error(`Error signing up user: ${(error as Error).message}`)
-            throw new Error('Failed to sign up user')
+            throw new ServiceError('Failed to sign up user')
         }
     }
 
@@ -62,10 +63,9 @@ class UserService {
         try {
             const user = await this.repository.GetUserByEmail(email)
             if (!user) {
-                Logger.error(
-                    `SignIn attempt failed: User with email ${email} does not exist`
+                throw new NotFoundError(
+                    `SignIn attempt failed: User with email ${email} not found`
                 )
-                throw new Error('User does not exist')
             }
             const isValidPassword = await VerifyPassword(
                 password,
@@ -78,11 +78,7 @@ class UserService {
                     email: user.email,
                     role: user.role
                 })
-                return {
-                    success: true,
-                    message: 'User Successfully Signed In',
-                    token
-                }
+                return token
             }
             Logger.warn(
                 `SignIn failed: Invalid password for user with email ${email}`
@@ -105,7 +101,7 @@ class UserService {
             }
         } catch (error) {
             Logger.error(`Error getting user: ${(error as Error).message}`)
-            throw new Error('Failed to get a user')
+            throw new ServiceError('Failed to get a user')
         }
     }
 
@@ -122,18 +118,18 @@ class UserService {
                     deletedUser = await this.repository.DeleteUser(userId)
                 } else if (role === 'user') {
                     if (user._id.toString() !== userId.toString()) {
-                        throw new Error('User Not Authorised')
+                        throw new UnAuthorizedError('User Not Authorised')
                     }
                     deletedUser = await this.repository.DeleteUser(userId)
                 } else {
-                    throw new Error('Invalid Role')
+                    throw new UnAuthorizedError('Invalid Role')
                 }
                 return deletedUser
             }
-            throw new Error('User Not Found')
+            throw new NotFoundError('User Not Found')
         } catch (error) {
             Logger.error(`Error deleting user: ${(error as Error).message}`)
-            throw new Error('Failed to delete a user')
+            throw new ServiceError('Failed to delete a user')
         }
     }
 }

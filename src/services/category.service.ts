@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { CategoryRepository } from '../database'
+import { ServiceError } from '../utils/errorHandler'
 import Logger from '../utils/logger'
 
 class CategoryService {
@@ -17,7 +18,7 @@ class CategoryService {
             return category
         } catch (error) {
             Logger.error(`Error Creating Category: ${error}`)
-            throw new Error(
+            throw new ServiceError(
                 `Error Creating Category: ${(error as Error).message}`
             )
         }
@@ -29,7 +30,7 @@ class CategoryService {
             return categories
         } catch (error) {
             Logger.error(`Error Getting Categories: ${error}`)
-            throw new Error(
+            throw new ServiceError(
                 `Error Getting Categories: ${(error as Error).message}`
             )
         }
